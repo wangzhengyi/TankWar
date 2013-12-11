@@ -1,5 +1,6 @@
 import java.awt.*;
 import java.awt.event.KeyEvent;
+import java.util.Random;
 
 
 public class Tank {
@@ -7,23 +8,28 @@ public class Tank {
     public static final int YSPEED = 5;
     public static final int TANK_WIDTH = 30;
     public static final int TANK_HEIGHT = 30;
-
+    
+    private boolean role;
     private int x;
     private int y;
     private boolean bL = false, bU = false, bR = false, bD = false;
     private TankClient tc = null;
     private Direction dir = Direction.STOP;
     private Direction gunDir = Direction.D;
-
+    private boolean live = true;
+    private static Random r = new Random();
+    private int step = r.nextInt(10) + 3;
+    
     /**
      * 构造函数1
      * 
      * @param x
      * @param y
      */
-    public Tank(int x, int y) {
+    public Tank(int x, int y, boolean role) {
         this.x = x;
         this.y = y;
+        this.role = role;
     }
 
     /**
@@ -33,9 +39,28 @@ public class Tank {
      * @param y
      * @param tc
      */
-    public Tank(int x, int y, TankClient tc) {
-        this(x, y);
+    public Tank(int x, int y, boolean role, Direction dir, TankClient tc) {
+        this(x, y, role);
+        this.dir = dir;
         this.tc = tc;
+    }
+
+    public int getX() {
+        return this.x;
+    }
+
+    public int getY() {
+        return this.y;
+    }
+
+    public boolean getRole() {
+        return this.role;
+    }
+    
+    public void setDirection() {
+        Direction[] dirs = Direction.values();
+        int k = r.nextInt(dirs.length);    
+        this.dir = dirs[k];
     }
 
     public void move() {
@@ -75,63 +100,91 @@ public class Tank {
         if (this.dir != Direction.STOP) {
             this.gunDir = this.dir;
         }
-        
+
         this.preventCrossOver();
+        
+        if (! this.role && this.step == 0) {
+            this.step = r.nextInt(10) + 3;
+            this.setDirection();
+        } else {
+            this.step -= 1;
+        }
+        
+        if (! this.role && r.nextInt(40) > 38) {
+            this.fire();
+        }
     }
 
-    
+
     public void preventCrossOver() {
         if (this.x < 0) {
             this.x = 0;
         }
-        
+
         if (this.x + TANK_WIDTH > TankClient.GAME_WIDTH) {
             this.x = TankClient.GAME_WIDTH - TANK_WIDTH;
         }
-        
+
         if (this.y < 0) {
             this.y = 0;
         }
-        
+
         if (this.y + TANK_HEIGHT > TankClient.GAME_HEIGHT) {
             this.y = TankClient.GAME_HEIGHT - TANK_HEIGHT;
         }
     }
-    
+
     public void draw(Graphics g) {
+        if (!this.live) {
+            if (!this.role) {
+                tc.tanks.remove(this);
+            } else {
+                Color c = g.getColor();
+                g.setColor(Color.MAGENTA);
+                g.drawString("游戏结束，大侠请重新来过！", 100, 100);
+                g.setColor(c);
+                // System.exit(0);
+
+            }
+            return;
+        }
+
         Color c = g.getColor();
-        g.setColor(Color.YELLOW);
+        if (this.role) {
+            g.setColor(Color.YELLOW);
+        } else {
+            g.setColor(Color.CYAN);
+        }
         g.fillOval(this.x, this.y, TANK_WIDTH, TANK_HEIGHT);
         g.setColor(Color.BLUE);
 
         switch (this.gunDir) {
             case U:
-                g.drawLine(this.x + TANK_WIDTH / 2, this.y, this.x + TANK_WIDTH / 2,
-                        this.y + TANK_HEIGHT / 2);
+                g.drawLine(this.x + TANK_WIDTH / 2, this.y, this.x + TANK_WIDTH / 2, this.y
+                        + TANK_HEIGHT / 2);
                 break;
             case LU:
-                g.drawLine(this.x, this.y, this.x + TANK_WIDTH / 2, this.y + TANK_HEIGHT
-                        / 2);
+                g.drawLine(this.x, this.y, this.x + TANK_WIDTH / 2, this.y + TANK_HEIGHT / 2);
                 break;
             case L:
-                g.drawLine(this.x, this.y + TANK_HEIGHT / 2, this.x + TANK_WIDTH / 2,
-                        this.y + TANK_HEIGHT / 2);
+                g.drawLine(this.x, this.y + TANK_HEIGHT / 2, this.x + TANK_WIDTH / 2, this.y
+                        + TANK_HEIGHT / 2);
                 break;
             case LD:
                 g.drawLine(this.x, this.y + TANK_HEIGHT, this.x + TANK_WIDTH / 2, this.y
                         + TANK_HEIGHT / 2);
                 break;
             case D:
-                g.drawLine(this.x + TANK_WIDTH / 2, this.y + TANK_HEIGHT, this.x
-                        + TANK_WIDTH / 2, this.y + TANK_HEIGHT / 2);
+                g.drawLine(this.x + TANK_WIDTH / 2, this.y + TANK_HEIGHT, this.x + TANK_WIDTH / 2,
+                        this.y + TANK_HEIGHT / 2);
                 break;
             case RD:
-                g.drawLine(this.x + TANK_WIDTH, this.y + TANK_HEIGHT, this.x
-                        + TANK_WIDTH / 2, this.y + TANK_HEIGHT / 2);
+                g.drawLine(this.x + TANK_WIDTH, this.y + TANK_HEIGHT, this.x + TANK_WIDTH / 2,
+                        this.y + TANK_HEIGHT / 2);
                 break;
             case R:
-                g.drawLine(this.x + TANK_WIDTH, this.y + TANK_HEIGHT / 2, this.x
-                        + TANK_WIDTH / 2, this.y + TANK_HEIGHT / 2);
+                g.drawLine(this.x + TANK_WIDTH, this.y + TANK_HEIGHT / 2, this.x + TANK_WIDTH / 2,
+                        this.y + TANK_HEIGHT / 2);
                 break;
             case RU:
                 g.drawLine(this.x + TANK_WIDTH, this.y, this.x + TANK_WIDTH / 2, this.y
@@ -189,6 +242,7 @@ public class Tank {
 
     /**
      * 按键效果
+     * 
      * @param e
      */
     public void keyPressed(KeyEvent e) {
@@ -211,9 +265,10 @@ public class Tank {
 
         this.locateDirection();
     }
-    
+
     /**
      * 松键效果
+     * 
      * @param e
      */
     public void keyReleased(KeyEvent e) {
@@ -244,9 +299,24 @@ public class Tank {
      * 开火
      */
     public void fire() {
+        if (! this.live) {
+            return;
+        }
         int missileX = this.x + TANK_WIDTH / 2 - Missile.MISSLE_WIDTH / 2;
         int missileY = this.y + TANK_HEIGHT / 2 - Missile.MISSLE_HEIGHT / 2;
-        Missile missile = new Missile(missileX, missileY, this.gunDir, this.tc);
+        Missile missile = new Missile(missileX, missileY, this.gunDir, this.role, this.tc);
         this.tc.missiles.add(missile);
+    }
+
+    public boolean isLive() {
+        return live;
+    }
+
+    public void setLive() {
+        this.live = false;
+    }
+
+    public Rectangle getRect() {
+        return new Rectangle(this.x, this.y, TANK_WIDTH, TANK_HEIGHT);
     }
 }
