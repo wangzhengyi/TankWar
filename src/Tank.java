@@ -8,11 +8,14 @@ public class Tank {
     public static final int SPEED = 5;
     public static final int WIDTH = 30, HEIGHT = 30;
     public static final int SCORE = 5;
+    public static final int HEROBLOOD = 100;
+    public static final int ENEMYBLOOD = 20;
 
     public static Random r = new Random();
     private boolean role;
     private int x, y;
     private int oldX, oldY;
+    private int life;
     private boolean bL = false, bU = false, bR = false, bD = false;
     private TankClient tc = null;
     private Direction dir;
@@ -37,6 +40,7 @@ public class Tank {
         this.role = role;
         this.dir = dir;
         this.tc = tc;
+        this.life = this.role ? HEROBLOOD : ENEMYBLOOD;
     }
 
     /**
@@ -180,7 +184,7 @@ public class Tank {
 
         this.preventCrossOver();
 
-        if (!this.role && r.nextInt(1000) > 990) {
+        if (!this.role && this.enemyAttack()) {
             this.fire();
         }
     }
@@ -346,6 +350,18 @@ public class Tank {
     }
     
     /**
+     * control the enemy tank fire
+     * @return
+     */
+    public boolean enemyAttack() {
+        if (r.nextInt(1000) > 900) {
+            return true;
+        } else {
+            return false;
+        }
+    }
+    
+    /**
      * judge tank live
      * 
      * @return live
@@ -385,6 +401,11 @@ public class Tank {
         }
     }
     
+    /**
+     * against tanks
+     * @param tanks
+     * @return
+     */
     public boolean againstTanks(List<Tank> tanks) {
         for (int i = 0; i < tanks.size(); i ++) {
             Tank t = tanks.get(i);
@@ -397,5 +418,21 @@ public class Tank {
         }
         
         return false;
+    }
+    
+    /**
+     * get tank life
+     * @return  life
+     */
+    public int getLife() {
+        return life;
+    }
+
+    /**
+     * decrease tank life
+     * @param life
+     */
+    public void setLife() {
+        this.life -= Missile.KILL;
     }
 }

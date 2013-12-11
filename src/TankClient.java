@@ -17,7 +17,7 @@ public class TankClient extends Frame {
 
     private Color backColor = Color.BLACK;
     private Image offScreenImage = null;
-    public Tank myTank = new Tank(50, 50, true, Direction.STOP, this);
+    public Tank heroTank = new Tank(50, 50, true, Direction.STOP, this);
     public List<Missile> missiles = new ArrayList<Missile>();
     public List<Explode> explodes = new ArrayList<Explode>();
     public List<Tank> enemyTanks = new ArrayList<Tank>();
@@ -58,6 +58,7 @@ public class TankClient extends Frame {
         g.drawString("Missiles Count: " + this.missiles.size(), 10, 20);
         g.drawString("Explodes Count: " + this.explodes.size(), 10, 40);
         g.drawString("Tanks Count: " + this.enemyTanks.size(), 10, 60);
+        g.drawString("HeroTank Life: " + this.heroTank.getLife(), 10, 80);
         g.setColor(c);
 
         // walls
@@ -67,7 +68,7 @@ public class TankClient extends Frame {
         }
 
         // my tank
-        myTank.draw(g);
+        heroTank.draw(g);
 
         // enemy Tanks
         for (int i = 0; i < this.enemyTanks.size(); i++) {
@@ -83,7 +84,7 @@ public class TankClient extends Frame {
         for (int i = 0; i < this.missiles.size(); i++) {
             Missile m = this.missiles.get(i);
             m.hitTanks(this.enemyTanks);
-            m.hitTank(myTank);
+            m.hitTank(heroTank);
             for (int j = 0; j < this.walls.size(); j++) {
                 m.againstWall(this.walls.get(j));
             }
@@ -156,11 +157,11 @@ public class TankClient extends Frame {
      */
     private class KeyMonitor extends KeyAdapter {
         public void keyReleased(KeyEvent e) {
-            myTank.keyReleased(e);
+            heroTank.keyReleased(e);
         }
 
         public void keyPressed(KeyEvent e) {
-            myTank.keyPressed(e);
+            heroTank.keyPressed(e);
         }
     }
 

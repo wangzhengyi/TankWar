@@ -6,6 +6,7 @@ import java.util.List;
 public class Missile {
     public static final int WIDTH = 10, HEIGHT = 10;
     public static final int SPEED = 7;
+    public static final int KILL = 10;
 
     private int x;
     private int y;
@@ -118,8 +119,13 @@ public class Missile {
     public boolean hitTank(Tank t) {
         if (this.live && this.getRect().intersects(t.getRect()) && t.isLive()
                 && this.role != t.getRole()) {
+            t.setLife();
+            
+            // life calculate
+            if (t.getLife() <= 0) {
+                t.setLive();
+            }
             this.live = false;
-            t.setLive();
             // explode effect
             Explode e = new Explode(this.x, this.y, this.tc);
             tc.explodes.add(e);
