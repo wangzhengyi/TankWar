@@ -4,119 +4,160 @@ import java.awt.Rectangle;
 import java.util.List;
 
 public class Missile {
-    public static final int MISSLE_WIDTH = 10;
-    public static final int MISSLE_HEIGHT = 10;
-    public static final int XSPEED = 2;
-    public static final int YSPEED = 2;
+    public static final int WIDTH = 10, HEIGHT = 10;
+    public static final int SPEED = 7;
 
     private int x;
     private int y;
     private Direction dir;
-    private TankClient tc = null;
+    private TankClient tc;
     private boolean live = true;
     private boolean role;
-    
-    public Missile(int x, int y, Direction dir) {
+
+    /**
+     * default constructor
+     * 
+     * @param x coordinate x
+     * @param y coordinate y
+     * @param dir missile direction
+     * @param role missile role
+     * @param tc reference of controller
+     */
+    public Missile(int x, int y, Direction dir, boolean role, TankClient tc) {
         this.x = x;
         this.y = y;
         this.dir = dir;
-    }
-
-    public Missile(int x, int y, Direction dir, boolean role, TankClient tc) {
-        this(x, y, dir);
         this.tc = tc;
         this.role = role;
     }
 
-    public int getX() {
-        return this.x;
-    }
-
-    public int getY() {
-        return this.y;
-    }
-
+    /**
+     * draw missile
+     * 
+     * @param g graphics class
+     */
     public void draw(Graphics g) {
-        if (! this.live) {
+        if (!this.live) {
             tc.missiles.remove(this);
             return;
         }
-        
+
         Color c = g.getColor();
         g.setColor(Color.RED);
-        g.fillOval(this.x, this.y, MISSLE_WIDTH, MISSLE_HEIGHT);
+        g.fillOval(this.x, this.y, WIDTH, HEIGHT);
         g.setColor(c);
 
         this.move();
     }
 
-    public void overBoundary() {
-        if (this.getX() < 0 || this.getX() > TankClient.GAME_WIDTH || this.getY() < 0 || this.getY() > TankClient.GAME_HEIGHT) {
+    /**
+     * cross boundary check
+     */
+    public void crossCheck() {
+        if (this.x < 0 || this.x > TankClient.WIDTH || this.y < 0 || this.y > TankClient.HEIGHT) {
             this.live = false;
         }
     }
-    
+
+    /**
+     * missile move
+     */
     public void move() {
         switch (this.dir) {
             case U:
-                this.y -= YSPEED;
+                this.y -= SPEED;
                 break;
             case LU:
-                this.x -= XSPEED;
-                this.y -= YSPEED;
+                this.x -= SPEED;
+                this.y -= SPEED;
                 break;
             case L:
-                this.x -= XSPEED;
+                this.x -= SPEED;
                 break;
             case LD:
-                this.x -= XSPEED;
-                this.y += YSPEED;
+                this.x -= SPEED;
+                this.y += SPEED;
                 break;
             case D:
-                this.y += YSPEED;
+                this.y += SPEED;
                 break;
             case RD:
-                this.x += XSPEED;
-                this.y += YSPEED;
+                this.x += SPEED;
+                this.y += SPEED;
                 break;
             case R:
-                this.x += XSPEED;
+                this.x += SPEED;
                 break;
             case RU:
-                this.x += XSPEED;
-                this.y -= YSPEED;
+                this.x += SPEED;
+                this.y -= SPEED;
                 break;
             default:
-                this.x += XSPEED;
+                this.x += SPEED;
                 break;
         }
-        
-        this.overBoundary();
+
+        this.crossCheck();
     }
 
+    /**
+     * get rectangle of missile
+     * 
+     * @return rectangle
+     */
     public Rectangle getRect() {
-        return new Rectangle(this.x, this.y, MISSLE_WIDTH, MISSLE_HEIGHT);
+        return new Rectangle(this.x, this.y, WIDTH, HEIGHT);
     }
 
+    /**
+     * hit tank
+     * 
+     * @param t tank
+     * @return
+     */
     public boolean hitTank(Tank t) {
-        if (this.live && this.getRect().intersects(t.getRect()) && t.isLive() && this.role != t.getRole()) {
+        if (this.live && this.getRect().intersects(t.getRect()) && t.isLive()
+                && this.role != t.getRole()) {
             this.live = false;
             t.setLive();
+            // explode effect
             Explode e = new Explode(this.x, this.y, this.tc);
             tc.explodes.add(e);
             return true;
         }
-        
+
         return false;
     }
-    
+
+
+    /**
+     * hit a lot of tanks
+     * 
+     * @param tanks
+     * @return hit or not hit
+     */
     public boolean hitTanks(List<Tank> tanks) {
-        for (int i = 0; i < tanks.size(); i ++) {
+        for (int i = 0; i < tanks.size(); i++) {
             if (hitTank(tanks.get(i))) {
                 return true;
             }
         }
-        
         return false;
+    }
+
+
+    /**
+     * hit against the wall
+     * 
+     * @param w the wall
+     * @return hit or not hit
+     */
+    public boolean againstWall(Wall w) {
+        if (this.getRect().intersects(w.getRect())) {
+            this.live = false;
+            return true;
+        } else {
+            return false;
+        }
     }
 }

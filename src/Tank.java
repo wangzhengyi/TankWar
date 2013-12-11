@@ -1,150 +1,58 @@
 import java.awt.*;
 import java.awt.event.KeyEvent;
-import java.util.Random;
+import java.util.*;
+import java.util.List;
 
 
 public class Tank {
-    public static final int XSPEED = 5;
-    public static final int YSPEED = 5;
-    public static final int TANK_WIDTH = 30;
-    public static final int TANK_HEIGHT = 30;
-    
+    public static final int SPEED = 5;
+    public static final int WIDTH = 30, HEIGHT = 30;
+    public static final int SCORE = 5;
+
+    public static Random r = new Random();
     private boolean role;
-    private int x;
-    private int y;
+    private int x, y;
+    private int oldX, oldY;
     private boolean bL = false, bU = false, bR = false, bD = false;
     private TankClient tc = null;
-    private Direction dir = Direction.STOP;
+    private Direction dir;
     private Direction gunDir = Direction.D;
     private boolean live = true;
-    private static Random r = new Random();
     private int step = r.nextInt(10) + 3;
-    
-    /**
-     * 构造函数1
-     * 
-     * @param x
-     * @param y
-     */
-    public Tank(int x, int y, boolean role) {
-        this.x = x;
-        this.y = y;
-        this.role = role;
-    }
 
     /**
-     * 构造函数2
+     * default constructor
      * 
-     * @param x
-     * @param y
-     * @param tc
+     * @param x coordinate x
+     * @param y coordinate y
+     * @param role tank role
+     * @param dir tank direction
+     * @param tc reference of controller
      */
     public Tank(int x, int y, boolean role, Direction dir, TankClient tc) {
-        this(x, y, role);
+        this.x = x;
+        this.y = y;
+        this.oldX = x;
+        this.oldY = y;
+        this.role = role;
         this.dir = dir;
         this.tc = tc;
     }
 
-    public int getX() {
-        return this.x;
-    }
-
-    public int getY() {
-        return this.y;
-    }
-
-    public boolean getRole() {
-        return this.role;
-    }
-    
-    public void setDirection() {
-        Direction[] dirs = Direction.values();
-        int k = r.nextInt(dirs.length);    
-        this.dir = dirs[k];
-    }
-
-    public void move() {
-        switch (this.dir) {
-            case U:
-                this.y -= YSPEED;
-                break;
-            case LU:
-                this.x -= XSPEED;
-                this.y -= YSPEED;
-                break;
-            case L:
-                this.x -= XSPEED;
-                break;
-            case LD:
-                this.x -= XSPEED;
-                this.y += YSPEED;
-                break;
-            case D:
-                this.y += YSPEED;
-                break;
-            case RD:
-                this.x += XSPEED;
-                this.y += YSPEED;
-                break;
-            case R:
-                this.x += XSPEED;
-                break;
-            case RU:
-                this.x += XSPEED;
-                this.y -= YSPEED;
-                break;
-            default:
-                break;
-        }
-
-        if (this.dir != Direction.STOP) {
-            this.gunDir = this.dir;
-        }
-
-        this.preventCrossOver();
-        
-        if (! this.role && this.step == 0) {
-            this.step = r.nextInt(10) + 3;
-            this.setDirection();
-        } else {
-            this.step -= 1;
-        }
-        
-        if (! this.role && r.nextInt(40) > 38) {
-            this.fire();
-        }
-    }
-
-
-    public void preventCrossOver() {
-        if (this.x < 0) {
-            this.x = 0;
-        }
-
-        if (this.x + TANK_WIDTH > TankClient.GAME_WIDTH) {
-            this.x = TankClient.GAME_WIDTH - TANK_WIDTH;
-        }
-
-        if (this.y < 0) {
-            this.y = 0;
-        }
-
-        if (this.y + TANK_HEIGHT > TankClient.GAME_HEIGHT) {
-            this.y = TankClient.GAME_HEIGHT - TANK_HEIGHT;
-        }
-    }
-
+    /**
+     * draw the tank
+     * 
+     * @param g
+     */
     public void draw(Graphics g) {
         if (!this.live) {
             if (!this.role) {
-                tc.tanks.remove(this);
+                tc.enemyTanks.remove(this);
             } else {
                 Color c = g.getColor();
                 g.setColor(Color.MAGENTA);
                 g.drawString("游戏结束，大侠请重新来过！", 100, 100);
                 g.setColor(c);
-                // System.exit(0);
-
             }
             return;
         }
@@ -155,40 +63,35 @@ public class Tank {
         } else {
             g.setColor(Color.CYAN);
         }
-        g.fillOval(this.x, this.y, TANK_WIDTH, TANK_HEIGHT);
+        g.fillOval(this.x, this.y, WIDTH, HEIGHT);
         g.setColor(Color.BLUE);
 
         switch (this.gunDir) {
             case U:
-                g.drawLine(this.x + TANK_WIDTH / 2, this.y, this.x + TANK_WIDTH / 2, this.y
-                        + TANK_HEIGHT / 2);
+                g.drawLine(this.x + WIDTH / 2, this.y, this.x + WIDTH / 2, this.y + HEIGHT / 2);
                 break;
             case LU:
-                g.drawLine(this.x, this.y, this.x + TANK_WIDTH / 2, this.y + TANK_HEIGHT / 2);
+                g.drawLine(this.x, this.y, this.x + WIDTH / 2, this.y + HEIGHT / 2);
                 break;
             case L:
-                g.drawLine(this.x, this.y + TANK_HEIGHT / 2, this.x + TANK_WIDTH / 2, this.y
-                        + TANK_HEIGHT / 2);
+                g.drawLine(this.x, this.y + HEIGHT / 2, this.x + WIDTH / 2, this.y + HEIGHT / 2);
                 break;
             case LD:
-                g.drawLine(this.x, this.y + TANK_HEIGHT, this.x + TANK_WIDTH / 2, this.y
-                        + TANK_HEIGHT / 2);
+                g.drawLine(this.x, this.y + HEIGHT, this.x + WIDTH / 2, this.y + HEIGHT / 2);
                 break;
             case D:
-                g.drawLine(this.x + TANK_WIDTH / 2, this.y + TANK_HEIGHT, this.x + TANK_WIDTH / 2,
-                        this.y + TANK_HEIGHT / 2);
+                g.drawLine(this.x + WIDTH / 2, this.y + HEIGHT, this.x + WIDTH / 2, this.y + HEIGHT
+                        / 2);
                 break;
             case RD:
-                g.drawLine(this.x + TANK_WIDTH, this.y + TANK_HEIGHT, this.x + TANK_WIDTH / 2,
-                        this.y + TANK_HEIGHT / 2);
+                g.drawLine(this.x + WIDTH, this.y + HEIGHT, this.x + WIDTH / 2, this.y + HEIGHT / 2);
                 break;
             case R:
-                g.drawLine(this.x + TANK_WIDTH, this.y + TANK_HEIGHT / 2, this.x + TANK_WIDTH / 2,
-                        this.y + TANK_HEIGHT / 2);
+                g.drawLine(this.x + WIDTH, this.y + HEIGHT / 2, this.x + WIDTH / 2, this.y + HEIGHT
+                        / 2);
                 break;
             case RU:
-                g.drawLine(this.x + TANK_WIDTH, this.y, this.x + TANK_WIDTH / 2, this.y
-                        + TANK_HEIGHT / 2);
+                g.drawLine(this.x + WIDTH, this.y, this.x + WIDTH / 2, this.y + HEIGHT / 2);
                 break;
             default:
                 break;
@@ -199,6 +102,113 @@ public class Tank {
         this.move();
     }
 
+
+    /**
+     * get tank role
+     */
+    public boolean getRole() {
+        return this.role;
+    }
+
+    /**
+     * set tank direction
+     */
+    public void setDirection() {
+        Direction[] dirs = Direction.values();
+        int k = r.nextInt(dirs.length);
+        this.dir = dirs[k];
+    }
+
+    /**
+     * recover the original tank location
+     */
+    private void recoverLoc() {
+        this.x = this.oldX;
+        this.y = this.oldY;
+    }
+
+    /**
+     * tank move
+     */
+    public void move() {
+        this.oldX = this.x;
+        this.oldY = this.y;
+
+        if (!this.role && this.step == 0) {
+            this.step = r.nextInt(10) + 3;
+            this.setDirection();
+        } else {
+            this.step -= 1;
+        }
+        
+        switch (this.dir) {
+            case U:
+                this.y -= SPEED;
+                break;
+            case LU:
+                this.x -= SPEED;
+                this.y -= SPEED;
+                break;
+            case L:
+                this.x -= SPEED;
+                break;
+            case LD:
+                this.x -= SPEED;
+                this.y += SPEED;
+                break;
+            case D:
+                this.y += SPEED;
+                break;
+            case RD:
+                this.x += SPEED;
+                this.y += SPEED;
+                break;
+            case R:
+                this.x += SPEED;
+                break;
+            case RU:
+                this.x += SPEED;
+                this.y -= SPEED;
+                break;
+            default:
+                break;
+        }
+
+        if (this.dir != Direction.STOP) {
+            this.gunDir = this.dir;
+        }
+
+        this.preventCrossOver();
+
+        if (!this.role && r.nextInt(1000) > 990) {
+            this.fire();
+        }
+    }
+
+    /**
+     * prevent tank cross the boundary
+     */
+    public void preventCrossOver() {
+        if (this.x < 0) {
+            this.x = 0;
+        }
+
+        if (this.x + WIDTH > TankClient.WIDTH) {
+            this.x = TankClient.WIDTH - WIDTH;
+        }
+
+        if (this.y < 0) {
+            this.y = 0;
+        }
+
+        if (this.y + HEIGHT > TankClient.HEIGHT) {
+            this.y = TankClient.HEIGHT - HEIGHT;
+        }
+    }
+
+    /**
+     * judge the direction, algorithm depend on Unix philosophy
+     */
     public void locateDirection() {
         int a, b, c, d, total;
 
@@ -241,7 +251,7 @@ public class Tank {
     }
 
     /**
-     * 按键效果
+     * key press monitor
      * 
      * @param e
      */
@@ -267,7 +277,7 @@ public class Tank {
     }
 
     /**
-     * 松键效果
+     * key release monitor
      * 
      * @param e
      */
@@ -277,6 +287,9 @@ public class Tank {
         switch (key) {
             case KeyEvent.VK_SPACE:
                 this.fire();
+                break;
+            case KeyEvent.VK_CONTROL:
+                this.superFire();
                 break;
             case KeyEvent.VK_UP:
                 this.bU = false;
@@ -296,27 +309,93 @@ public class Tank {
     }
 
     /**
-     * 开火
+     * tank attack
      */
     public void fire() {
-        if (! this.live) {
+        if (!this.live) {
             return;
         }
-        int missileX = this.x + TANK_WIDTH / 2 - Missile.MISSLE_WIDTH / 2;
-        int missileY = this.y + TANK_HEIGHT / 2 - Missile.MISSLE_HEIGHT / 2;
+        int missileX = this.x + WIDTH / 2 - Missile.WIDTH / 2;
+        int missileY = this.y + HEIGHT / 2 - Missile.HEIGHT / 2;
         Missile missile = new Missile(missileX, missileY, this.gunDir, this.role, this.tc);
         this.tc.missiles.add(missile);
     }
 
+    /**
+     * overload fire, fire with direction
+     */
+    public void fire(Direction dir) {
+        if (!this.live) {
+            return;
+        }
+        int missileX = this.x + WIDTH / 2 - Missile.WIDTH / 2;
+        int missileY = this.y + HEIGHT / 2 - Missile.HEIGHT / 2;
+        Missile missile = new Missile(missileX, missileY, dir, this.role, this.tc);
+        this.tc.missiles.add(missile);
+    }
+    
+    /**
+     * super fire with press control
+     */
+    public void superFire() {
+        Direction[] dirs = Direction.values();
+        
+        for (int i = 0; i < dirs.length - 1; i ++) {
+            this.fire(dirs[i]);
+        }
+    }
+    
+    /**
+     * judge tank live
+     * 
+     * @return live
+     */
     public boolean isLive() {
         return live;
     }
 
+    /**
+     * make tank die
+     */
     public void setLive() {
         this.live = false;
     }
 
+    /**
+     * get rectangle of tank
+     * 
+     * @return rectangle
+     */
     public Rectangle getRect() {
-        return new Rectangle(this.x, this.y, TANK_WIDTH, TANK_HEIGHT);
+        return new Rectangle(this.x, this.y, WIDTH, HEIGHT);
+    }
+
+    /**
+     * against the wall
+     * 
+     * @param w
+     * @return
+     */
+    public boolean againstWall(Wall w) {
+        if (this.getRect().intersects(w.getRect())) {
+            this.recoverLoc();
+            return true;
+        } else {
+            return false;
+        }
+    }
+    
+    public boolean againstTanks(List<Tank> tanks) {
+        for (int i = 0; i < tanks.size(); i ++) {
+            Tank t = tanks.get(i);
+            if (this != t) {
+                if (this.live && t.isLive() && this.getRect().intersects(t.getRect())) {
+                    this.recoverLoc();
+                    return true;
+                }
+            }
+        }
+        
+        return false;
     }
 }

@@ -2,35 +2,50 @@ import java.awt.Color;
 import java.awt.Graphics;
 
 
-public class Explode {
-    private int[] diameter = {10, 15, 20, 25, 30, 35, 49, 35, 30, 25};
-    private int x, y;
-    private boolean live = true;
-    private int step = 0;
-    private TankClient tc = null;
+public class Explode {    
+    public static final int DIAMETER = 25;
+    public static final int LIMIT = 200;
     
+    private int x;
+    private int y;
+    private Color color;
+    private TankClient tc;
+    private int step;
+    
+    /**
+     * default constructor
+     * 
+     * @param x coordinate x
+     * @param y coordinate y
+     * @param tc the reference of controller
+     */
     public Explode(int x, int y, TankClient tc) {
         this.x = x;
         this.y = y;
         this.tc = tc;
+        this.color = Color.ORANGE;
+        this.step = 1;
     }
-    
+
+    /**
+     * draw the explosion effect
+     * 
+     * @param g Graphics class
+     */
     public void draw(Graphics g) {
-        if (! this.live) {
+        if (this.step * DIAMETER > LIMIT) {
             tc.explodes.remove(this);
             return;
         }
         
-        if (this.step == diameter.length) {
-            this.live = false;
-            this.step = 0;
-            return;
-        }
+        // TODO:
+        System.out.println(this.step);
         
         Color c = g.getColor();
-        g.setColor(Color.ORANGE);
-        g.fillOval(x, y, diameter[step], diameter[step]);
+        g.setColor(this.color);
+        g.fillOval(x, y, DIAMETER * this.step, DIAMETER * this.step);
         g.setColor(c);
+        
         this.step ++;
     }
 }
