@@ -40,7 +40,7 @@ public class Blood {
     /**
      * get blood rectangle
      * 
-     * @return
+     * @return rectangle
      */
     public Rectangle getRect() {
         return new Rectangle(this.x, this.y, WIDTH, HEIGHT);
@@ -55,7 +55,7 @@ public class Blood {
     
     /**
      * get blood block live
-     * @return
+     * @return live
      */
     public boolean getLive() {
         return this.live;

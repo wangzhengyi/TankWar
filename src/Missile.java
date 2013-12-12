@@ -116,7 +116,7 @@ public class Missile {
      * hit tank
      * 
      * @param t tank
-     * @return
+     * @return boolean
      */
     public boolean hitTank(Tank t) {
         if (this.live && this.getRect().intersects(t.getRect()) && t.isLive()

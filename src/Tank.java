@@ -387,7 +387,7 @@ public class Tank {
     /**
      * control the enemy tank fire
      * 
-     * @return
+     * @return boolean
      */
     public boolean enemyAttack() {
         if (r.nextInt(1000) > 900) {
@@ -426,7 +426,7 @@ public class Tank {
      * against the wall
      * 
      * @param w
-     * @return
+     * @return boolean
      */
     public boolean againstWall(Wall w) {
         if (this.getRect().intersects(w.getRect())) {
@@ -445,7 +445,7 @@ public class Tank {
      * against tanks
      * 
      * @param tanks
-     * @return
+     * @return boolean
      */
     public boolean againstTanks(List<Tank> tanks) {
         for (int i = 0; i < tanks.size(); i++) {
@@ -475,8 +475,6 @@ public class Tank {
 
     /**
      * decrease tank life
-     * 
-     * @param life
      */
     public void setLife() {
         this.life -= Missile.KILL;
