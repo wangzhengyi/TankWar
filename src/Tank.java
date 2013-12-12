@@ -7,8 +7,9 @@ import java.util.List;
 public class Tank {
     /**
      * inner blood bar class
+     * 
      * @author wzy
-     *
+     * 
      */
     private class BloodBar {
         public void draw(Graphics g) {
@@ -16,21 +17,22 @@ public class Tank {
             // background
             g.setColor(backBloodColor);
             g.drawRect(x, y - 10, WIDTH, 10);
-            
+
             // foreground
             g.setColor(bloodColor);
             int width = role ? life * WIDTH / HEROBLOOD : life * WIDTH / ENEMYBLOOD;
             g.fillRect(x, y - 10, width, 10);
-            
+
             g.setColor(c);
         }
     }
-     
+
     public static final int SPEED = 5;
     public static final int WIDTH = 30, HEIGHT = 30;
     public static final int SCORE = 5;
-    public static final int HEROBLOOD = 1000;
+    public static final int HEROBLOOD = 200;
     public static final int ENEMYBLOOD = 20;
+    public static final int BLOODINCREASE = 50;
 
     public static Random r = new Random();
     private boolean role;
@@ -47,7 +49,7 @@ public class Tank {
     private Color bloodColor = new Color(0xed, 0x19, 0x41);
     private Color backBloodColor = new Color(0xff, 0xfe, 0xf9);
     private BloodBar bbar = new BloodBar();
-    
+
     /**
      * default constructor
      * 
@@ -94,30 +96,35 @@ public class Tank {
 
         switch (this.gunDir) {
             case U:
-                g.drawLine(this.x + WIDTH / 2, this.y - HEIGHT / 2, this.x + WIDTH / 2, this.y + HEIGHT / 2);
+                g.drawLine(this.x + WIDTH / 2, this.y - HEIGHT / 2, this.x + WIDTH / 2, this.y
+                        + HEIGHT / 2);
                 break;
             case LU:
-                g.drawLine(this.x - WIDTH / 2, this.y - HEIGHT / 2, this.x + WIDTH / 2, this.y + HEIGHT / 2);
+                g.drawLine(this.x - WIDTH / 2, this.y - HEIGHT / 2, this.x + WIDTH / 2, this.y
+                        + HEIGHT / 2);
                 break;
             case L:
-                g.drawLine(this.x - WIDTH / 2, this.y + HEIGHT / 2, this.x + WIDTH / 2, this.y + HEIGHT / 2);
+                g.drawLine(this.x - WIDTH / 2, this.y + HEIGHT / 2, this.x + WIDTH / 2, this.y
+                        + HEIGHT / 2);
                 break;
             case LD:
-                g.drawLine(this.x, this.y + HEIGHT + HEIGHT / 2, this.x + WIDTH / 2, this.y + HEIGHT / 2);
+                g.drawLine(this.x, this.y + HEIGHT + HEIGHT / 2, this.x + WIDTH / 2, this.y
+                        + HEIGHT / 2);
                 break;
             case D:
-                g.drawLine(this.x + WIDTH / 2, this.y + HEIGHT + HEIGHT / 2, this.x + WIDTH / 2, this.y + HEIGHT
-                        / 2);
+                g.drawLine(this.x + WIDTH / 2, this.y + HEIGHT + HEIGHT / 2, this.x + WIDTH / 2,
+                        this.y + HEIGHT / 2);
                 break;
             case RD:
                 g.drawLine(this.x + WIDTH, this.y + HEIGHT, this.x + WIDTH / 2, this.y + HEIGHT / 2);
                 break;
             case R:
-                g.drawLine(this.x + WIDTH + WIDTH / 2, this.y + HEIGHT / 2, this.x + WIDTH / 2, this.y + HEIGHT
-                        / 2);
+                g.drawLine(this.x + WIDTH + WIDTH / 2, this.y + HEIGHT / 2, this.x + WIDTH / 2,
+                        this.y + HEIGHT / 2);
                 break;
             case RU:
-                g.drawLine(this.x + WIDTH + WIDTH / 2, this.y - HEIGHT / 2, this.x + WIDTH / 2, this.y + HEIGHT / 2);
+                g.drawLine(this.x + WIDTH + WIDTH / 2, this.y - HEIGHT / 2, this.x + WIDTH / 2,
+                        this.y + HEIGHT / 2);
                 break;
             default:
                 break;
@@ -126,7 +133,7 @@ public class Tank {
         g.setColor(c);
 
         bbar.draw(g);
-        
+
         this.move();
     }
 
@@ -168,7 +175,7 @@ public class Tank {
         } else {
             this.step -= 1;
         }
-        
+
         switch (this.dir) {
             case U:
                 this.y -= SPEED;
@@ -331,6 +338,10 @@ public class Tank {
             case KeyEvent.VK_RIGHT:
                 this.bR = false;
                 break;
+            case KeyEvent.VK_F2:
+                this.live = true;
+                this.life = HEROBLOOD;
+                break;
         }
 
         this.locateDirection();
@@ -361,20 +372,21 @@ public class Tank {
         Missile missile = new Missile(missileX, missileY, dir, this.role, this.tc);
         this.tc.missiles.add(missile);
     }
-    
+
     /**
      * super fire with press control
      */
     public void superFire() {
         Direction[] dirs = Direction.values();
-        
-        for (int i = 0; i < dirs.length - 1; i ++) {
+
+        for (int i = 0; i < dirs.length - 1; i++) {
             this.fire(dirs[i]);
         }
     }
-    
+
     /**
      * control the enemy tank fire
+     * 
      * @return
      */
     public boolean enemyAttack() {
@@ -384,7 +396,7 @@ public class Tank {
             return false;
         }
     }
-    
+
     /**
      * judge tank live
      * 
@@ -424,36 +436,38 @@ public class Tank {
             return false;
         }
     }
-    
+
     public void setStep() {
         this.step = 0;
     }
-    
+
     /**
      * against tanks
+     * 
      * @param tanks
      * @return
      */
     public boolean againstTanks(List<Tank> tanks) {
-        for (int i = 0; i < tanks.size(); i ++) {
+        for (int i = 0; i < tanks.size(); i++) {
             Tank t = tanks.get(i);
             if (this != t) {
                 if (this.live && t.isLive() && this.getRect().intersects(t.getRect())) {
                     this.recoverLoc();
                     t.recoverLoc();
                     this.setStep();
-                    
+
                     return true;
                 }
             }
         }
-        
+
         return false;
     }
-    
+
     /**
      * get tank life
-     * @return  life
+     * 
+     * @return life
      */
     public int getLife() {
         return life;
@@ -461,10 +475,26 @@ public class Tank {
 
     /**
      * decrease tank life
+     * 
      * @param life
      */
     public void setLife() {
         this.life -= Missile.KILL;
     }
-    
+
+    /**
+     * eat blood
+     * 
+     * @param blood
+     */
+    public void eatBlood(Blood blood) {
+        if (this.role && this.live && blood.getLive() && this.getRect().intersects(blood.getRect())) {
+            if (this.life + BLOODINCREASE > HEROBLOOD) {
+                this.life = HEROBLOOD;
+            } else {
+                this.life += BLOODINCREASE;
+            }
+            blood.setLive();
+        }
+    }
 }

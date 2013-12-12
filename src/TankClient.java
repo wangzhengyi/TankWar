@@ -8,20 +8,20 @@ import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.util.List;
 import java.util.ArrayList;
-import java.util.Random;
 
 public class TankClient extends Frame {
     public static final int GAME_X = 400, GAME_Y = 100;
     public static final int HEIGHT = 600, WIDTH = 800;
     public static final int ENEMY_SIZE = 6;
 
-    private Color backColor = Color.BLACK;
+    private Color backColor = new Color(0x65, 0xc2, 0x94);
     private Image offScreenImage = null;
-    public Tank heroTank = new Tank(50, 50, true, Direction.STOP, this);
+    public Tank heroTank = new Tank(GAME_X + WIDTH - Tank.WIDTH, GAME_Y + HEIGHT - Tank.HEIGHT, true, Direction.STOP, this);
     public List<Missile> missiles = new ArrayList<Missile>();
     public List<Explode> explodes = new ArrayList<Explode>();
     public List<Tank> enemyTanks = new ArrayList<Tank>();
     public List<Wall> walls = new ArrayList<Wall>();
+    public Blood blood = new Blood();
 
 
     /**
@@ -34,6 +34,19 @@ public class TankClient extends Frame {
         this.walls.add(w2);
     }
 
+    /**
+     * generate enemy tanks
+     */
+    public void generateEnemys() {
+        for (int i = 0; i < ENEMY_SIZE; i++) {
+            int x, y;
+            y = 50; 
+            x = (i + 10) * Tank.WIDTH;      
+            Tank enemyTank = new Tank(x, y, false, Direction.D, this);
+            enemyTanks.add(enemyTank);
+        }
+    }
+    
     /**
      * double-buffer applied to avert screen flicker and flash
      */
@@ -69,8 +82,12 @@ public class TankClient extends Frame {
 
         // my tank
         heroTank.draw(g);
+        heroTank.eatBlood(blood);
 
         // enemy Tanks
+        if (this.enemyTanks.size() <= 0) {
+            this.generateEnemys();
+        }
         for (int i = 0; i < this.enemyTanks.size(); i++) {
             Tank enemyTank = this.enemyTanks.get(i);
             enemyTank.againstTanks(this.enemyTanks);
@@ -96,6 +113,9 @@ public class TankClient extends Frame {
             Explode ex = this.explodes.get(i);
             ex.draw(g);
         }
+        
+        // blood
+        blood.draw(g);
     }
 
     /**
@@ -103,13 +123,7 @@ public class TankClient extends Frame {
      */
     public void launchFrame() {
         // generate enemy enemyTanks
-        Random r = new Random();
-        for (int i = 0; i < ENEMY_SIZE; i++) {
-            int k = r.nextInt();
-            if (k < 0) k *= -1;
-            Tank enemyTank = new Tank((k + i) % GAME_X, (k + i) % GAME_Y, false, Direction.D, this);
-            enemyTanks.add(enemyTank);
-        }
+        this.generateEnemys();
 
         // set screen
         this.setTitle("TankWar");
@@ -164,7 +178,6 @@ public class TankClient extends Frame {
             heroTank.keyPressed(e);
         }
     }
-
 
     public static void main(String[] args) {
         TankClient tc = new TankClient();
