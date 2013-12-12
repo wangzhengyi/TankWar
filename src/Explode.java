@@ -38,9 +38,6 @@ public class Explode {
             return;
         }
         
-        // TODO:
-        System.out.println(this.step);
-        
         Color c = g.getColor();
         g.setColor(this.color);
         g.fillOval(x, y, DIAMETER * this.step, DIAMETER * this.step);
