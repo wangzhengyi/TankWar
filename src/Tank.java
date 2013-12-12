@@ -5,10 +5,31 @@ import java.util.List;
 
 
 public class Tank {
+    /**
+     * inner blood bar class
+     * @author wzy
+     *
+     */
+    private class BloodBar {
+        public void draw(Graphics g) {
+            Color c = g.getColor();
+            // background
+            g.setColor(backBloodColor);
+            g.drawRect(x, y - 10, WIDTH, 10);
+            
+            // foreground
+            g.setColor(bloodColor);
+            int width = role ? life * WIDTH / HEROBLOOD : life * WIDTH / ENEMYBLOOD;
+            g.fillRect(x, y - 10, width, 10);
+            
+            g.setColor(c);
+        }
+    }
+     
     public static final int SPEED = 5;
     public static final int WIDTH = 30, HEIGHT = 30;
     public static final int SCORE = 5;
-    public static final int HEROBLOOD = 100;
+    public static final int HEROBLOOD = 1000;
     public static final int ENEMYBLOOD = 20;
 
     public static Random r = new Random();
@@ -22,7 +43,11 @@ public class Tank {
     private Direction gunDir = Direction.D;
     private boolean live = true;
     private int step = r.nextInt(10) + 3;
-
+    private Color tankColor;
+    private Color bloodColor = new Color(0xed, 0x19, 0x41);
+    private Color backBloodColor = new Color(0xff, 0xfe, 0xf9);
+    private BloodBar bbar = new BloodBar();
+    
     /**
      * default constructor
      * 
@@ -41,6 +66,7 @@ public class Tank {
         this.dir = dir;
         this.tc = tc;
         this.life = this.role ? HEROBLOOD : ENEMYBLOOD;
+        this.tankColor = this.role ? new Color(0xfc, 0xaf, 0x17) : new Color(0xf2, 0xea, 0xda);
     }
 
     /**
@@ -62,40 +88,36 @@ public class Tank {
         }
 
         Color c = g.getColor();
-        if (this.role) {
-            g.setColor(Color.YELLOW);
-        } else {
-            g.setColor(Color.CYAN);
-        }
+        g.setColor(this.tankColor);
         g.fillOval(this.x, this.y, WIDTH, HEIGHT);
         g.setColor(Color.BLUE);
 
         switch (this.gunDir) {
             case U:
-                g.drawLine(this.x + WIDTH / 2, this.y, this.x + WIDTH / 2, this.y + HEIGHT / 2);
+                g.drawLine(this.x + WIDTH / 2, this.y - HEIGHT / 2, this.x + WIDTH / 2, this.y + HEIGHT / 2);
                 break;
             case LU:
-                g.drawLine(this.x, this.y, this.x + WIDTH / 2, this.y + HEIGHT / 2);
+                g.drawLine(this.x - WIDTH / 2, this.y - HEIGHT / 2, this.x + WIDTH / 2, this.y + HEIGHT / 2);
                 break;
             case L:
-                g.drawLine(this.x, this.y + HEIGHT / 2, this.x + WIDTH / 2, this.y + HEIGHT / 2);
+                g.drawLine(this.x - WIDTH / 2, this.y + HEIGHT / 2, this.x + WIDTH / 2, this.y + HEIGHT / 2);
                 break;
             case LD:
-                g.drawLine(this.x, this.y + HEIGHT, this.x + WIDTH / 2, this.y + HEIGHT / 2);
+                g.drawLine(this.x, this.y + HEIGHT + HEIGHT / 2, this.x + WIDTH / 2, this.y + HEIGHT / 2);
                 break;
             case D:
-                g.drawLine(this.x + WIDTH / 2, this.y + HEIGHT, this.x + WIDTH / 2, this.y + HEIGHT
+                g.drawLine(this.x + WIDTH / 2, this.y + HEIGHT + HEIGHT / 2, this.x + WIDTH / 2, this.y + HEIGHT
                         / 2);
                 break;
             case RD:
                 g.drawLine(this.x + WIDTH, this.y + HEIGHT, this.x + WIDTH / 2, this.y + HEIGHT / 2);
                 break;
             case R:
-                g.drawLine(this.x + WIDTH, this.y + HEIGHT / 2, this.x + WIDTH / 2, this.y + HEIGHT
+                g.drawLine(this.x + WIDTH + WIDTH / 2, this.y + HEIGHT / 2, this.x + WIDTH / 2, this.y + HEIGHT
                         / 2);
                 break;
             case RU:
-                g.drawLine(this.x + WIDTH, this.y, this.x + WIDTH / 2, this.y + HEIGHT / 2);
+                g.drawLine(this.x + WIDTH + WIDTH / 2, this.y - HEIGHT / 2, this.x + WIDTH / 2, this.y + HEIGHT / 2);
                 break;
             default:
                 break;
@@ -103,6 +125,8 @@ public class Tank {
 
         g.setColor(c);
 
+        bbar.draw(g);
+        
         this.move();
     }
 
@@ -401,6 +425,10 @@ public class Tank {
         }
     }
     
+    public void setStep() {
+        this.step = 0;
+    }
+    
     /**
      * against tanks
      * @param tanks
@@ -412,6 +440,9 @@ public class Tank {
             if (this != t) {
                 if (this.live && t.isLive() && this.getRect().intersects(t.getRect())) {
                     this.recoverLoc();
+                    t.recoverLoc();
+                    this.setStep();
+                    
                     return true;
                 }
             }
@@ -435,4 +466,5 @@ public class Tank {
     public void setLife() {
         this.life -= Missile.KILL;
     }
+    
 }

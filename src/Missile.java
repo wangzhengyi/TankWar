@@ -14,6 +14,7 @@ public class Missile {
     private TankClient tc;
     private boolean live = true;
     private boolean role;
+    private Color color;
 
     /**
      * default constructor
@@ -30,6 +31,7 @@ public class Missile {
         this.dir = dir;
         this.tc = tc;
         this.role = role;
+        this.color = this.role ? new Color(0xff, 0xce, 0x0e) : new Color(0x9d, 0x90, 0x87);
     }
 
     /**
@@ -44,7 +46,7 @@ public class Missile {
         }
 
         Color c = g.getColor();
-        g.setColor(Color.RED);
+        g.setColor(this.color);
         g.fillOval(this.x, this.y, WIDTH, HEIGHT);
         g.setColor(c);
 

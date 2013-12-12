@@ -28,7 +28,7 @@ public class Wall {
         this.y = y;
         this.width = width;
         this.height = height;
-        this.color = Color.GREEN;
+        this.color = new Color(0xf1, 0x5a, 0x22);
     }
 
     /**
